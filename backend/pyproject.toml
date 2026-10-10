@@ -1,0 +1,18 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "yuhao", email = "2728093475@qq.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "aiomysql>=0.3.2",
+    "fastapi[standard]>=0.136",
+    "pydantic-settings>=2.0",
+    "tortoise-orm[aiomysql]>=0.24",
+]
+
+[tool.uv]
+package = false
