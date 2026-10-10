@@ -12,6 +12,7 @@ dependencies = [
     "fastapi[standard]>=0.136",
     "pydantic-settings>=2.0",
     "tortoise-orm[aiomysql]>=0.24",
+    "tzdata>=2026.5",
 ]
 
 [tool.uv]

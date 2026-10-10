@@ -14,7 +14,7 @@ class Settings(BaseSettings):
   ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
   # 数据库配置（后续章节会添加更多配置项）
-  DATABASE_URL: str = "mysql://legal_user:legal_pass@localhost:3307/legal_db"
+  DATABASE_URL: str = "mysql://root:123456@localhost:3307/legal_db"
   REDIS_URL: str = "redis://localhost:6379/0"
 
   class Config:
