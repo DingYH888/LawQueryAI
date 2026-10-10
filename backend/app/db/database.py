@@ -12,6 +12,7 @@ async def init_db():
       "models.case",
      ]},
     use_tz=False, # Windows 下不设置时区避免报错
+    _enable_global_fallback=True, # FastAPI lifespan 与请求分属不同 task，需全局 fallback
    )
   await Tortoise.generate_schemas(safe=True)
 

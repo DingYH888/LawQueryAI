@@ -11,6 +11,7 @@ dependencies = [
     "aiomysql>=0.3.2",
     "fastapi[standard]>=0.136",
     "pydantic-settings>=2.0",
+    "python-jose[cryptography]>=3.5",
     "tortoise-orm[aiomysql]>=0.24",
     "tzdata>=2026.5",
 ]

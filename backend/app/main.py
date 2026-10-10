@@ -29,6 +29,8 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
+from app.api import auth
+app.include_router(auth.router, prefix="/api/auth", tags=["认证"])
 
 @app.get("/health")
 async def health_check():
