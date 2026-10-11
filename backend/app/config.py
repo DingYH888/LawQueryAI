@@ -34,6 +34,11 @@ class Settings(BaseSettings):
   # 向量数据库配置
   VECTOR_STORE: str = "chroma" # chroma, milvus
   VECTOR_STORE_PATH: str = "./data/chroma"
+  # RAG 配置
+  RAG_TOP_K: int = 5
+  RAG_SCORE_THRESHOLD: float = 0.7
+  RERANK_ENABLED: bool = True
+
 
   class Config:
     env_file = ".env"
