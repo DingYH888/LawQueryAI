@@ -10,8 +10,15 @@ requires-python = ">=3.12"
 dependencies = [
     "aiomysql>=0.3.2",
     "fastapi[standard]>=0.136",
+    "langchain>=1.3",
+    "langchain-chroma>=1.1",
+    "langchain-huggingface>=1.2",
+    "langchain-openai>=1.2",
+    "modelscope>=1.25",
     "pydantic-settings>=2.0",
     "python-jose[cryptography]>=3.5",
+    "redis>=8.0",
+    "sentence-transformers>=5.5",
     "tortoise-orm[aiomysql]>=0.24",
     "tzdata>=2026.5",
 ]

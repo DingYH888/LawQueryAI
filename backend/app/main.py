@@ -5,11 +5,13 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.db.database import init_db, close_db
+from app.rag.vector_store import init_vector_store
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   """应用生命周期：启动时连数据库，关闭时断开"""
   await init_db()
+  await init_vector_store()
   yield
   await close_db()
 
@@ -35,3 +37,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["认证"])
 @app.get("/health")
 async def health_check():
   return {"status": "healthy", "version": "1.0.0"}
+
+"""uv run uvicorn app.main:app --port 8000
+# 启动时日志显示向量库初始化成功
+# 不会出现 HuggingFace 下载提示（从本地加载）"""

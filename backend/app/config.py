@@ -17,6 +17,24 @@ class Settings(BaseSettings):
   DATABASE_URL: str = "mysql://root:123456@localhost:3307/legal_db"
   REDIS_URL: str = "redis://localhost:6379/0"
 
+    # LLM 配置
+  LLM_PROVIDER: str = "openai" # openai, anthropic, deepseek
+  LLM_API_KEY: str = ""
+  LLM_MODEL: str = "qwen3.8-27b"
+  LLM_TEMPERATURE: float = 0.7
+  LLM_MAX_TOKENS: int = 4096
+  # OpenAI 兼容接口地址（阿里云百炼）
+  LLM_BASE_URL: str = "https://ws-iyypdocg6wq1k3e4.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+
+  # Embedding 配置
+  EMBEDDING_PROVIDER: str = "huggingface" # openai, huggingface
+  EMBEDDING_MODEL: str = "BAAI/bge-small-zh"
+  EMBEDDING_DIMENSION: int = 512
+
+  # 向量数据库配置
+  VECTOR_STORE: str = "chroma" # chroma, milvus
+  VECTOR_STORE_PATH: str = "./data/chroma"
+
   class Config:
     env_file = ".env"
     case_sensitive = True
