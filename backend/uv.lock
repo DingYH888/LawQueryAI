@@ -266,8 +266,10 @@ dependencies = [
     { name = "langchain-huggingface" },
     { name = "langchain-openai" },
     { name = "langgraph" },
+    { name = "langgraph-checkpoint-mysql", extra = ["aiomysql"] },
     { name = "modelscope" },
     { name = "pydantic-settings" },
+    { name = "pymysql" },
     { name = "python-jose", extra = ["cryptography"] },
     { name = "rank-bm25" },
     { name = "redis" },
@@ -286,8 +288,10 @@ requires-dist = [
     { name = "langchain-huggingface", specifier = ">=1.2" },
     { name = "langchain-openai", specifier = ">=1.2" },
     { name = "langgraph", specifier = ">=1.2" },
+    { name = "langgraph-checkpoint-mysql", extras = ["aiomysql"], specifier = ">=3.0.0" },
     { name = "modelscope", specifier = ">=1.25" },
     { name = "pydantic-settings", specifier = ">=2.0" },
+    { name = "pymysql", specifier = "<1.2" },
     { name = "python-jose", extras = ["cryptography"], specifier = ">=3.5" },
     { name = "rank-bm25", specifier = ">=0.2" },
     { name = "redis", specifier = ">=8.0" },
@@ -1829,6 +1833,25 @@ wheels = [
 ]
 
 [[package]]
+name = "langgraph-checkpoint-mysql"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "langgraph-checkpoint" },
+    { name = "orjson" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e0/4e/0a6c78e5d3f2ca1525903c2363e721873594b6b77dd83537a6369193c474/langgraph_checkpoint_mysql-3.0.0.tar.gz", hash = "sha256:006aaa089f4c2fbd7b2c113b800ccd3dbb95f92203e656451677256b4b4f880f", size = 213142, upload-time = "2026-01-23T11:11:15.74Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/08/68/343103a7fae05523f9cecabbec2babdb737e66b4bf6ea48ae00c685ed11c/langgraph_checkpoint_mysql-3.0.0-py3-none-any.whl", hash = "sha256:7560ccd16e7596a047e15a307cec12dbd88fdcaab45a75759e5c6adef22a27d1", size = 38009, upload-time = "2026-01-23T11:11:14.697Z" },
+]
+
+[package.optional-dependencies]
+aiomysql = [
+    { name = "aiomysql" },
+]
+
+[[package]]
 name = "langgraph-prebuilt"
 version = "1.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3318,11 +3341,11 @@ wheels = [
 
 [[package]]
 name = "pymysql"
-version = "1.2.3"
+version = "1.1.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b1/d4/c15b459e25a23767d2f4065ef40968920320f04e302889574310c21c96a3/pymysql-1.2.3.tar.gz", hash = "sha256:d5b288529782e536ae171866df3ca9dc4f6cbfb3cc2f18e6f837fbb90dbc262b", size = 50629, upload-time = "2026-09-17T12:22:49.146Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/ec/8d45c920e90445f0b75c590b32851853ed319763b0d8dff8d283052da8cf/pymysql-1.1.3.tar.gz", hash = "sha256:e70ebf2047a4edf6138cf79c68ad418ef620af65900aa585c5e8bfc95044d43a", size = 48207, upload-time = "2026-05-01T09:09:54.532Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/4b/0a906d8184f011ff8dbd4722743783867589b33269d2c5fff238d636fdcb/pymysql-1.2.3-py3-none-any.whl", hash = "sha256:14f1c68e2ed859243ae5ca41ffbe677027fc46bc136a9f0be8a4e928e5e7415a", size = 46740, upload-time = "2026-09-17T12:22:47.826Z" },
+    { url = "https://files.pythonhosted.org/packages/8e/dc/9085f3d6f497e9b25fb40d6e8ecef3ddbb5cf977a949b933624a299f5c16/pymysql-1.1.3-py3-none-any.whl", hash = "sha256:8164ba62c552f6105f3b11753352d0f16b90d1703ba67d81923d5a8a5d1c5289", size = 45356, upload-time = "2026-05-01T09:09:53.316Z" },
 ]
 
 [[package]]

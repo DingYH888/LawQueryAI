@@ -6,14 +6,17 @@ from contextlib import asynccontextmanager
 from app.config import settings
 from app.db.database import init_db, close_db
 from app.rag.vector_store import init_vector_store
+from app.llm.checkpoint import init_checkpointer, close_checkpointer
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-  """应用生命周期：启动时连数据库，关闭时断开"""
+  """应用生命周期：启动时连数据库 + 初始化 checkpointer + 向量库，关闭时逐一释放"""
   await init_db()
+  await init_checkpointer()
   await init_vector_store()
   yield
   await close_db()
+  await close_checkpointer()
 
 app = FastAPI(
   title="LegalMind API",
