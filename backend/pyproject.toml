@@ -15,6 +15,7 @@ dependencies = [
     "langchain-community>=0.4",
     "langchain-huggingface>=1.2",
     "langchain-openai>=1.2",
+    "langgraph>=1.2",
     "modelscope>=1.25",
     "pydantic-settings>=2.0",
     "python-jose[cryptography]>=3.5",
