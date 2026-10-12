@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from app.config import settings
-from models.user import User
+from app.models.user import User
 
 security = HTTPBearer(auto_error=False)
 

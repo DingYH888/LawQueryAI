@@ -125,6 +125,7 @@ async def stream_message(request: ChatRequest, user=Depends(get_current_user)):
 
 @router.delete("/sessions/{session_id}")
 async def delete_session(session_id: str, user=Depends(get_current_user)):
+  """删除会话"""
   session = await _get_owned_session(session_id, user)
   await session.delete() # 外键 CASCADE 自动删除关联消息
   return {"message": "Session deleted"}
@@ -132,6 +133,7 @@ async def delete_session(session_id: str, user=Depends(get_current_user)):
 
 @router.get("/sessions")
 async def list_sessions(user=Depends(get_current_user)):
+  """获取当前用户的会话列表"""
   user_obj = await _get_user_obj(user)
   sessions = await ChatSession.filter(user=user_obj).order_by("-created_at").limit(50)
   result = []
@@ -147,6 +149,7 @@ async def list_sessions(user=Depends(get_current_user)):
 
 @router.get("/sessions/{session_id}/messages")
 async def get_session_messages(session_id: str, user=Depends(get_current_user), limit: int = 50):
+  """获取某个会话的消息"""  
   session = await _get_owned_session(session_id, user)
   messages = await ChatMessageRecord.filter(chat_session=session).order_by("created_at").limit(limit)
   return {"messages": [{"role": m.role, "content": m.content} for m in messages]}
