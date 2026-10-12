@@ -8,8 +8,10 @@ async def init_db():
   await Tortoise.init(
     db_url=db_url,
     modules={"models": [
-      "models.user",
-      "models.case",
+      "app.models.user",
+      "app.models.case",
+      "app.models.chat",
+      "app.models.document",
      ]},
     use_tz=False, # Windows 下不设置时区避免报错
     _enable_global_fallback=True, # FastAPI lifespan 与请求分属不同 task，需全局 fallback
