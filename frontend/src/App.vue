@@ -7,7 +7,7 @@ const auth = useAuthStore()
 <template>
   <div class="min-h-screen" :style="{ backgroundColor: 'var(--bg)' }">
     <!-- 顶部导航栏 -->
-    <header class="border-b sticky top-0 z-50 backdrop-blur-sm" :style="{ backgroundColor: 'rgba(255,255,255,0.92)', borderColor: 'var(--border)' }">
+    <header class="border-b sticky top-0 z-50 backdrop-blur-sm" :style="{ backgroundColor: 'var(--header-bg)', borderColor: 'var(--border)' }">
       <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         <router-link to="/" class="flex items-center gap-2 no-underline font-semibold text-lg" :style="{ color: 'var(--text)' }">
           <span class="w-8 h-8 rounded-lg flex items-center justify-center text-white" :style="{ backgroundColor: 'var(--primary)' }">法</span>

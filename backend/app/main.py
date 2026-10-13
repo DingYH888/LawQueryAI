@@ -91,3 +91,8 @@ async def health_check():
 """uv run uvicorn app.main:app --port 8000
 # 启动时日志显示向量库初始化成功
 # 不会出现 HuggingFace 下载提示（从本地加载）"""
+
+"""cd D:\JAVAProject\AIProjects\LawQueryAI\frontend
+pnpm install     # 出现 Proceed? (Y/n) 时 回车/y
+pnpm dev前端启动
+"""
