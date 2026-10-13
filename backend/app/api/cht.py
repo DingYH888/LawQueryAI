@@ -51,7 +51,14 @@ async def _ensure_session(session_id: str, user_obj: User) -> ChatSession:
   return session
 
 async def _record_messages(session: ChatSession, user_msg: str, assistant_msg: str) -> None:
-  """把一轮对话写入 ChatMessageRecord，供侧边栏 UI 读取"""
+  """把一轮对话写入 ChatMessageRecord，供侧边栏 UI 读取
+
+  防御：流式生成耗时较长，期间用户可能已删除该会话，此时写入会触发外键约束(1452)错误，
+  先复核会话是否仍存在，不存在则跳过，避免把错误冒泡成 "Stream error"。
+  """
+  if not await ChatSession.filter(id=session.pk).exists():
+    logger.warning("会话 %s 已删除，跳过消息写入", session.pk)
+    return
   await ChatMessageRecord.create(chat_session=session, role="user", content=user_msg)
   await ChatMessageRecord.create(chat_session=session, role="assistant", content=assistant_msg)
 
@@ -85,6 +92,9 @@ async def stream_message(request: ChatRequest, user=Depends(get_current_user)):
   async def generate():
     full_text = ""
     try:
+      # 首帧回传 session_id：前端依赖该字段锁定当前会话（chat.js 中 if (chunk.session_id)），
+      # 否则每次发消息 session_id 恒为 null，后端每轮都新建会话，导致会话无法续接、产生孤儿会话
+      yield f"data: {json.dumps({'session_id': session_id}, ensure_ascii=False)}\n\n"
       # 走 workflow 流式：仅 qa_generation 节点的 LLM 调用产出 token
       async for chunk, metadata in workflow.astream(query=query, thread_id=session_id):
         node = metadata.get("langgraph_node") if metadata else None
