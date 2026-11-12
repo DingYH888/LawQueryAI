@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import client from '../api/client'
+import { useChatStore } from './chat'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || null)
@@ -34,6 +35,8 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    // 清理本地会话缓存，避免下一个登录用户看到上一个用户的对话
+    useChatStore().reset()
   }
 
   function init() {

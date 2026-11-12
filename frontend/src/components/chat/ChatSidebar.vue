@@ -4,6 +4,7 @@ import { useChatStore } from '../../stores/chat'
 const chat = useChatStore()
 
 function selectSession(sessionId) {
+  // 只切换视图指针：其他会话（含正在后台生成的）缓存与流式连接都不会被中断
   chat.loadMessages(sessionId)
 }
 
@@ -41,6 +42,15 @@ function confirmDelete(sessionId, e) {
         }"
       >
         <span class="truncate flex-1">{{ s.title || '新对话' }}</span>
+        <!-- 后台仍在生成的会话：给出明确提示，方便用户切回查看 -->
+        <span
+          v-if="chat.isSessionStreaming(s.session_id)"
+          class="text-xs px-1.5 mr-1 flex-shrink-0"
+          :style="{ color: 'var(--accent)' }"
+          title="AI 正在回复"
+        >
+          生成中
+        </span>
         <button
           @click="confirmDelete(s.session_id, $event)"
           class="opacity-0 group-hover:opacity-100 text-xs px-1.5 py-0.5 rounded transition-opacity cursor-pointer"

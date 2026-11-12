@@ -50,17 +50,34 @@ async def _ensure_session(session_id: str, user_obj: User) -> ChatSession:
    )
   return session
 
-async def _record_messages(session: ChatSession, user_msg: str, assistant_msg: str) -> None:
-  """把一轮对话写入 ChatMessageRecord，供侧边栏 UI 读取
+async def _session_alive(session: ChatSession) -> bool:
+  """防御：流式生成耗时较长，期间用户可能已删除该会话，此时写入会触发外键约束(1452)错误，
+  先复核会话是否仍存在，不存在则跳过，避免把错误冒泡成 "Stream error"。"""
+  if await ChatSession.filter(id=session.pk).exists():
+    return True
+  logger.warning("会话 %s 已删除，跳过消息写入", session.pk)
+  return False
 
-  防御：流式生成耗时较长，期间用户可能已删除该会话，此时写入会触发外键约束(1452)错误，
-  先复核会话是否仍存在，不存在则跳过，避免把错误冒泡成 "Stream error"。
-  """
-  if not await ChatSession.filter(id=session.pk).exists():
-    logger.warning("会话 %s 已删除，跳过消息写入", session.pk)
+
+async def _record_user_message(session: ChatSession, user_msg: str) -> None:
+  """流式开始时就落库用户提问：
+  前端在生成过程中切换会话/刷新后重新拉取历史时，提问不会因为回答未生成完而丢失。"""
+  if not await _session_alive(session):
     return
   await ChatMessageRecord.create(chat_session=session, role="user", content=user_msg)
+
+
+async def _record_assistant_message(session: ChatSession, assistant_msg: str) -> None:
+  """回答生成完毕后落库"""
+  if not await _session_alive(session):
+    return
   await ChatMessageRecord.create(chat_session=session, role="assistant", content=assistant_msg)
+
+
+async def _record_messages(session: ChatSession, user_msg: str, assistant_msg: str) -> None:
+  """把一轮对话写入 ChatMessageRecord，供侧边栏 UI 读取"""
+  await _record_user_message(session, user_msg)
+  await _record_assistant_message(session, assistant_msg)
 
 @router.post("/send", response_model=ChatResponse)
 async def send_message(request: ChatRequest, user=Depends(get_current_user)):
@@ -95,6 +112,9 @@ async def stream_message(request: ChatRequest, user=Depends(get_current_user)):
       # 首帧回传 session_id：前端依赖该字段锁定当前会话（chat.js 中 if (chunk.session_id)），
       # 否则每次发消息 session_id 恒为 null，后端每轮都新建会话，导致会话无法续接、产生孤儿会话
       yield f"data: {json.dumps({'session_id': session_id}, ensure_ascii=False)}\n\n"
+
+      # 先落库用户提问：即使回答还在生成、前端切换/刷新，历史接口也能读到本轮 question
+      await _record_user_message(session, query)
       # 走 workflow 流式：仅 qa_generation 节点的 LLM 调用产出 token
       async for chunk, metadata in workflow.astream(query=query, thread_id=session_id):
         node = metadata.get("langgraph_node") if metadata else None
@@ -115,8 +135,8 @@ async def stream_message(request: ChatRequest, user=Depends(get_current_user)):
           full_text = fallback
           yield f"data: {json.dumps({'content': fallback}, ensure_ascii=False)}\n\n"
 
-      # 写入侧边栏记录
-      await _record_messages(session, query, full_text)
+      # 回答生成完毕后再落库 assistant 消息（user 消息已在流开始时写入，避免重复）
+      await _record_assistant_message(session, full_text)
 
       # 最后发送 sources
       sources = values.get("sources") or []

@@ -4,6 +4,8 @@ import { marked } from 'marked'
 
 const props = defineProps({
   message: { type: Object, required: true },
+  // 该条消息是否仍在流式生成中（用于切换会话后恢复「思考中」的视觉状态）
+  streaming: { type: Boolean, default: false },
 })
 
 const isUser = computed(() => props.message.role === 'user')
@@ -48,10 +50,11 @@ const renderedContent = computed(() => {
         </div>
         <div
           v-else
-          class="px-4 py-2.5 rounded-2xl"
-          :style="{ backgroundColor: 'var(--bg-secondary)' }"
+          class="px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm"
+          :style="{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }"
         >
           <span class="inline-block w-2 h-4 rounded" :style="{ backgroundColor: 'var(--text-secondary)' }" style="animation: blink 1s infinite;"></span>
+          <span v-if="streaming">AI 正在思考中…</span>
         </div>
 
         <!-- 引用来源 -->

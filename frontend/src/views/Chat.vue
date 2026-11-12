@@ -1,39 +1,69 @@
 <script setup>
 import { onMounted, watch, ref, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useChatStore } from '../stores/chat'
 import ChatSidebar from '../components/chat/ChatSidebar.vue'
 import ChatMessage from '../components/chat/ChatMessage.vue'
 import ChatInput from '../components/chat/ChatInput.vue'
 
 const route = useRoute()
+const router = useRouter()
 const chat = useChatStore()
 const messagesEnd = ref(null)
 const showSidebar = ref(true)
 
-// 加载会话列表
+function scrollToBottom(smooth = false) {
+  nextTick(() => {
+    messagesEnd.value?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' })
+  })
+}
+
+// 加载会话列表；store 已在初始化时从 sessionStorage 恢复缓存，
+// 因此这里只做服务端列表/历史的校准，不会清空已有会话状态
 onMounted(() => {
   chat.loadSessions()
-  // 如果路由有 sessionId，加载对应会话
-  if (route.params.sessionId) {
-    chat.loadMessages(route.params.sessionId)
+  const sessionId = route.params.sessionId
+  if (sessionId) {
+    chat.loadMessages(sessionId)
   }
 })
 
-// 如果路由参数变化，加载对应会话
-watch(() => route.params.sessionId, (newVal) => {
-  if (newVal) {
-    chat.loadMessages(newVal)
+// 路由参数变化（浏览器前进/后退、直接访问 /chat/:id）时同步 store
+watch(
+  () => route.params.sessionId,
+  (newVal, oldVal) => {
+    if (newVal) {
+      if (newVal !== chat.currentSessionId) chat.loadMessages(newVal)
+    } else if (oldVal && chat.currentSessionId) {
+      // 从某个会话地址回到 /chat：视为新建对话（旧会话缓存保留）
+      chat.newSession()
+    }
   }
-})
+)
 
-// 自动滚动到底部
+// store 的当前会话变化时反向同步 URL，保证刷新/分享链接能回到同一会话
+watch(
+  () => chat.currentSessionId,
+  (sessionId) => {
+    const urlSessionId = route.params.sessionId
+    if (sessionId && urlSessionId !== sessionId) {
+      router.replace(`/chat/${sessionId}`)
+    } else if (!sessionId && urlSessionId) {
+      router.replace('/chat')
+    }
+  }
+)
+
+// 自动滚动到底部：消息条数变化（切换会话、新消息）
 watch(
   () => chat.messages.length,
-  async () => {
-    await nextTick()
-    messagesEnd.value?.scrollIntoView({ behavior: 'smooth' })
-  }
+  () => scrollToBottom(true)
+)
+
+// 自动滚动到底部：正在流式生成时内容持续变化
+watch(
+  () => chat.messages[chat.messages.length - 1]?.content || '',
+  () => scrollToBottom(false)
 )
 </script>
 
@@ -70,7 +100,12 @@ watch(
 
         <!-- 消息列表 -->
         <div v-else class="max-w-4xl mx-auto">
-          <ChatMessage v-for="(msg, i) in chat.messages" :key="i" :message="msg" />
+          <ChatMessage
+            v-for="(msg, i) in chat.messages"
+            :key="msg.id || i"
+            :message="msg"
+            :streaming="chat.isStreaming && i === chat.messages.length - 1"
+          />
           <div ref="messagesEnd"></div>
         </div>
       </div>
