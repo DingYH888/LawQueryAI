@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { searchCases, getCaseDetail } from '../api/cases'
 
 const query = ref('')
@@ -9,6 +9,12 @@ const results = ref([])
 const total = ref(0)
 const loading = ref(false)
 const error = ref('')
+
+// 是否已完成过一次搜索（只有在请求成功返回后才置为 true），
+// 用它而不是输入框的实时值来决定「未找到」提示是否展示，
+// 避免用户刚开始输入、还没点搜索就出现空结果提示
+const searched = ref(false)
+const searchedQuery = ref('')
 
 // 详情弹窗
 const showDetail = ref(false)
@@ -20,6 +26,31 @@ const caseTypeOptions = ['', '民事', '刑事', '行政', '劳动争议', '知�
 
 const currentPage = ref(1)
 const pageSize = 10
+
+// 无结果提示：仅当「已搜索过」且「当前输入仍是被搜索的关键词」时展示
+const showEmptyState = computed(
+  () => searched.value && results.value.length === 0 && query.value.trim() === searchedQuery.value
+)
+// 初始/待搜索提示：无结果、无「未找到」提示且无错误时才展示
+const showIdleState = computed(
+  () => results.value.length === 0 && !showEmptyState.value && !error.value
+)
+const idleHint = computed(() =>
+  searched.value
+    ? '已修改关键词，点击「搜索」重新检索'
+    : '输入关键词后点击「搜索」，即可检索相关裁判案例'
+)
+
+// 清空输入时回到初始态，避免残留上一轮的「未找到」或结果
+watch(query, (val) => {
+  if (!val.trim()) {
+    searched.value = false
+    searchedQuery.value = ''
+    results.value = []
+    total.value = 0
+    error.value = ''
+  }
+})
 
 async function doSearch(page = 1) {
   const q = query.value.trim()
@@ -39,8 +70,12 @@ async function doSearch(page = 1) {
     const data = await searchCases(params)
     results.value = data.cases || []
     total.value = data.total || 0
+    // 只有搜索请求成功返回后才标记「已搜索」，并记录实际搜索的关键词
+    searchedQuery.value = q
+    searched.value = true
   } catch (e) {
     error.value = e.response?.data?.detail || '搜索失败，请重试'
+    searched.value = false
   } finally {
     loading.value = false
   }
@@ -124,9 +159,18 @@ function handleKeydown(e) {
       <div class="text-sm" :style="{ color: 'var(--text-secondary)' }">搜索中...</div>
     </div>
 
-    <div v-else-if="results.length === 0 && query" class="text-center py-16">
+    <!-- 空结果：仅在搜索执行完成且确实没有匹配时才提示 -->
+    <div v-else-if="showEmptyState" class="text-center py-16">
       <div class="text-4xl mb-3">🔍</div>
-      <p class="text-sm" :style="{ color: 'var(--text-secondary)' }">未找到相关案例，试试其他关键词</p>
+      <p class="text-sm" :style="{ color: 'var(--text-secondary)' }">
+        未找到与「{{ searchedQuery }}」相关的案例，试试其他关键词
+      </p>
+    </div>
+
+    <!-- 初始态：尚未触发搜索 -->
+    <div v-else-if="showIdleState" class="text-center py-16">
+      <div class="text-4xl mb-3">📚</div>
+      <p class="text-sm" :style="{ color: 'var(--text-secondary)' }">{{ idleHint }}</p>
     </div>
 
     <div v-else-if="results.length > 0" class="space-y-3">
