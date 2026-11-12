@@ -284,11 +284,23 @@ export const useChatStore = defineStore('chat', () => {
         schedulePersist()
       }
     } catch (e) {
+      // 用户主动取消（AbortError）、流超时（StreamTimeoutError）、网络/服务端异常要给不同提示
       const reply = entry.messages[aiIdx]
-      if (e?.name !== 'AbortError' && reply && !reply.content) {
+      if (reply && e?.name === 'AbortError') {
+        if (!reply.content) reply.content = '（已取消）'
+      } else if (reply && e?.name === 'StreamTimeoutError') {
+        reply.content = reply.content
+          ? `${reply.content}\n\n（响应超时已中断，请重试）`
+          : '响应超时，未收到回答，请重试。'
+      } else if (reply && !reply.content) {
         reply.content = '抱歉，消息发送失败，请重试。'
       }
     } finally {
+      // 兜底：流已结束但一个字符都没有时，不要让气泡永远停在「思考中」
+      const reply = entry.messages[aiIdx]
+      if (reply && !reply.content) {
+        reply.content = '未收到有效回答，请重试。'
+      }
       entry.streaming = false
       entry.abort = null
       saveNow()

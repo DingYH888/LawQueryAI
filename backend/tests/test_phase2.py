@@ -203,7 +203,8 @@ def test_intent_fallback_disabled_raises_sentinel():
   agent = _intent_agent(FakeStructured({
     "raw": AIMessage(content="qa"), "parsed": None, "parsing_error": None,
    }))
-  with mock.patch.object(settings, "AGENT_FALLBACK_ENABLED", False):
+  with mock.patch.object(settings, "AGENT_INTENT_MODE", "structured"), \
+       mock.patch.object(settings, "AGENT_FALLBACK_ENABLED", False):
     with pytest.raises(IntentFallbackDisabled):
       asyncio.run(agent.recognize_structured("随便"))
 

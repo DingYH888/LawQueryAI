@@ -3,6 +3,8 @@
 按 session_id（= thread_id）跨轮次/跨进程恢复；ChatMessageRecord 供侧边栏 UI。"""
 import uuid
 import json
+import asyncio
+import contextlib
 import logging
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
@@ -17,6 +19,9 @@ from app.models.user import User
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# SSE 心跳间隔（秒）：首 token 实测可达 80s+，长时间无数据会让浏览器/代理判定空闲
+HEARTBEAT_INTERVAL = 10.0
 
 class ChatMessage(BaseModel):
   role: str
@@ -79,6 +84,55 @@ async def _record_messages(session: ChatSession, user_msg: str, assistant_msg: s
   await _record_user_message(session, user_msg)
   await _record_assistant_message(session, assistant_msg)
 
+
+async def _iter_with_heartbeat(source, interval: float = HEARTBEAT_INTERVAL):
+  """把上游异步流包装成「空闲时产出 None」的流，用于发送 SSE 注释帧保活。
+
+  - 上游（workflow.astream）有产出时原样转发；
+  - 心跳由独立的 ticker 任务定时投递，主循环只做一次 queue.get()，
+    避免 wait_for 超时取消 queue.get 导致后续计时失效（实测第 2 个心跳会丢）；
+  - 上游异常在消费端重新抛出，让 generate() 的 except 统一兜底；
+  - 消费中断时取消 pump / ticker，由 workflow.astream 自身的 finally 关闭 LangGraph 流。
+  """
+  queue: "asyncio.Queue" = asyncio.Queue()
+  sentinel = object()
+  beat = object()
+
+  async def pump():
+    try:
+      async for item in source:
+        queue.put_nowait(item)
+    except asyncio.CancelledError:
+      raise
+    except Exception as exc: # 交给消费端统一处理
+      queue.put_nowait(exc)
+    finally:
+      queue.put_nowait(sentinel)
+
+  async def ticker():
+    while True:
+      await asyncio.sleep(interval)
+      queue.put_nowait(beat)
+
+  tasks = [asyncio.create_task(pump()), asyncio.create_task(ticker())]
+  try:
+    while True:
+      item = await queue.get()
+      if item is sentinel:
+        return
+      if item is beat:
+        yield None
+        continue
+      if isinstance(item, Exception):
+        raise item
+      yield item
+  finally:
+    for task in tasks:
+      if not task.done():
+        task.cancel()
+    with contextlib.suppress(asyncio.CancelledError, Exception):
+      await asyncio.wait(tasks, timeout=5)
+
 @router.post("/send", response_model=ChatResponse)
 async def send_message(request: ChatRequest, user=Depends(get_current_user)):
   """发送消息（非流式）"""
@@ -116,7 +170,12 @@ async def stream_message(request: ChatRequest, user=Depends(get_current_user)):
       # 先落库用户提问：即使回答还在生成、前端切换/刷新，历史接口也能读到本轮 question
       await _record_user_message(session, query)
       # 走 workflow 流式：仅 qa_generation 节点的 LLM 调用产出 token
-      async for chunk, metadata in workflow.astream(query=query, thread_id=session_id):
+      async for item in _iter_with_heartbeat(workflow.astream(query=query, thread_id=session_id)):
+        # None = 心跳：SSE 注释帧，前端解析时忽略，仅用于保活与「连接仍在」的判断
+        if item is None:
+          yield ": ping\n\n"
+          continue
+        chunk, metadata = item
         node = metadata.get("langgraph_node") if metadata else None
         if node == "qa_generation" and chunk.content:
           full_text += chunk.content
@@ -135,8 +194,14 @@ async def stream_message(request: ChatRequest, user=Depends(get_current_user)):
           full_text = fallback
           yield f"data: {json.dumps({'content': fallback}, ensure_ascii=False)}\n\n"
 
-      # 回答生成完毕后再落库 assistant 消息（user 消息已在流开始时写入，避免重复）
-      await _record_assistant_message(session, full_text)
+      if full_text:
+        # 回答生成完毕后再落库 assistant 消息（user 消息已在流开始时写入，避免重复）
+        await _record_assistant_message(session, full_text)
+      else:
+        # 零内容兜底：不落库空回答（否则前端刷新后只剩一个空气泡），
+        # 并回传明确提示，让前端把「思考中」切换成可读文案
+        logger.warning("本轮回答为空，不落库 session=%s", session.pk)
+        yield f"data: {json.dumps({'content': '抱歉，本轮未能生成有效回答，请重试或换个问法。'}, ensure_ascii=False)}\n\n"
 
       # 最后发送 sources
       sources = values.get("sources") or []
@@ -150,7 +215,16 @@ async def stream_message(request: ChatRequest, user=Depends(get_current_user)):
       yield f"data: {json.dumps({'content': f'抱歉，处理出错：{e}'}, ensure_ascii=False)}\n\n"
       yield "data: [DONE]\n\n"
 
-  return StreamingResponse(generate(), media_type="text/event-stream")
+  # 关闭代理/网关缓冲，保证心跳与 token 逐帧到达前端
+  return StreamingResponse(
+    generate(),
+    media_type="text/event-stream",
+    headers={
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  )
 
 
 @router.delete("/sessions/{session_id}")

@@ -223,3 +223,22 @@ __marimo__/
 面试题_LegalMind.md
 LawQueryAI_面试项目分析.md
 面试题库_AI工程师_Agent_RAG.md
+
+# 本地运行产物：向量库索引（由 scripts/build_index.py 重建）
+backend/data/chroma/
+
+# Swagger UI 本地静态资源（由 scripts/fetch_swagger_ui.py 下载）
+backend/static/swagger-ui/
+
+# 评测 / 验收脚本生成物（跑脚本即可重建）
+backend/evals/report.json
+backend/evals/report.md
+backend/evals/*_report.json
+backend/evals/sse_recording.json
+backend/evals/*.log
+
+# AI / IDE 工具工作目录（个人过程资料，不入库）
+.workbuddy/
+.arts/
+.codeartsdoer/
+.screenshots/

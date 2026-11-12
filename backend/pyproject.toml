@@ -1,8 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "LawQueryAI 后端：FastAPI + LangGraph Agent + RAG 智能法律咨询系统"
 authors = [
     { name = "yuhao", email = "2728093475@qq.com" }
 ]

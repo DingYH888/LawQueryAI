@@ -45,9 +45,13 @@ class Settings(BaseSettings):
 
   # Agent 工程化（Phase 1）：全部可由 .env 覆盖；默认 direct 走原有稳定链路
   AGENT_TOOL_MODE: str = "direct" # direct(默认) | function_call
-  AGENT_INTENT_MODE: str = "structured" # structured | legacy
+  # keyword(默认)：关键词短路，零 LLM 调用，省掉 10~15s 意图识别耗时
+  # structured：结构化输出；legacy：旧 Prompt + 白名单
+  AGENT_INTENT_MODE: str = "keyword" # keyword | structured | legacy
   AGENT_FALLBACK_ENABLED: bool = True
   AGENT_MAX_TOOL_CALLS: int = 1
+  # 带入 LLM 的历史消息上限（含当前提问），防止 checkpointer 累积导致首 token 越来越慢
+  AGENT_HISTORY_MAX_MESSAGES: int = 20
 
   # 分层容错（Phase 2）：默认值按标准 3307 实测分段耗时设定，不写死 30s
   LLM_REQUEST_TIMEOUT: float = 120.0 # 非流式整请求；实测最长生成段 40839ms

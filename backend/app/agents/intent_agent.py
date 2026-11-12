@@ -72,10 +72,33 @@ class IntentAgent:
   INTENTS = Literal["qa", "document", "search"]
   VALID_INTENTS = ["qa", "document", "search"]
 
+  # keyword 模式规则：只有明确的「写文书 / 查案例」指令才短路，
+  # 其余一律 qa（与 LLM 判定一致）。目的是把意图识别移出关键路径，
+  # 省掉一次 10~15s 的串行 LLM 调用（首 token 延迟的主要来源之一）。
+  KEYWORDS = {
+    "document": (
+      "起诉状", "答辩状", "上诉状", "反诉状", "律师函", "文书模板",
+      "写一份", "写个起诉状", "起草一份", "起草个", "拟一份", "生成一份",
+      "帮我写一份", "帮我起草", "帮我拟",
+    ),
+    "search": (
+      "查找判例", "查判例", "判例", "查找案例", "检索案例", "案例检索",
+      "类似案例", "相关案例", "找类似判决", "找个类似案例", "找一下类似判决",
+    ),
+  }
+
   def __init__(self):
     self.llm = get_llm()
     self.prompt = ChatPromptTemplate.from_template(INTENT_RECOGNITION_PROMPT)
     self.chain = self.prompt | self.llm | StrOutputParser()
+
+  def recognize_by_keywords(self, query: str) -> str:
+    """零 LLM 调用的意图判定：命中明确指令词才返回 document/search，否则 qa。"""
+    text = (query or "").strip().lower()
+    for intent in ("document", "search"):
+      if any(keyword in text for keyword in self.KEYWORDS[intent]):
+        return intent
+    return "qa"
 
   @staticmethod
   def _normalize_intent(text: str) -> str:
@@ -106,9 +129,15 @@ class IntentAgent:
   async def recognize_structured(self, query: str) -> dict:
     """返回 {"intent", "fallback_reason"}。
 
+    keyword 模式（默认）零 LLM 调用，直接按关键词判定；
     legacy 模式走旧 recognize()；解析失败走 raw.content 白名单；
     异常/超时直接落 qa，不再发起第二次 LLM 调用（Phase 2）。
     """
+    if settings.AGENT_INTENT_MODE == "keyword":
+      intent = self.recognize_by_keywords(query)
+      span_event("intent.keyword", intent=intent, query_len=len(query))
+      return {"intent": intent, "fallback_reason": None}
+
     if settings.AGENT_INTENT_MODE != "structured":
       return {"intent": await self.recognize(query), "fallback_reason": None}
 

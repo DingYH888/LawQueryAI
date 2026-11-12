@@ -5,6 +5,7 @@ import logging
 from typing import List, Dict, AsyncIterator
 from langchain_core.messages import BaseMessage, SystemMessage, AIMessageChunk
 
+from app.config import settings
 from app.llm.model_client import get_llm
 from app.llm.prompts import QA_SYSTEM_PROMPT
 
@@ -16,12 +17,19 @@ class QAAgent:
 
   def __init__(self):
     self.llm = get_llm()
+    # 只保留最近 N 条历史：checkpointer 会累积整段对话，prompt 越滚越大，
+    # 首 token 延迟随之增长；末尾一定包含当前提问。
+    self.max_history = max(2, int(settings.AGENT_HISTORY_MAX_MESSAGES))
 
   def build_messages(self, cases: List[Dict], messages: List[BaseMessage]) -> List[BaseMessage]:
     """组装 LLM 输入：system（人设 + 案例上下文）+ 对话历史（含当前问题）。
      案例作为当轮 system 注入，绝不进入长期累积的 messages。"""
     system_content = QA_SYSTEM_PROMPT + "\n\n## 相关案例\n" + self._format_cases(cases)
-    return [SystemMessage(content=system_content)] + list(messages)
+    history = list(messages or [])
+    if len(history) > self.max_history:
+      logger.info("历史消息 %d 条，截断为最近 %d 条", len(history), self.max_history)
+      history = history[-self.max_history:]
+    return [SystemMessage(content=system_content)] + history
 
   async def answer(self, cases: List[Dict], messages: List[BaseMessage]) -> Dict:
     """非流式回答"""
