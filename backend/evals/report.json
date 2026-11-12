@@ -1,0 +1,590 @@
+{
+  "meta": {
+    "generated_at": "2026-11-12T10:11:07+00:00",
+    "golden_meta": {
+      "_meta": "自动弱标注、非人工、仅作相对回归基线",
+      "warning": "固定小样本，不得宣称 Recall@5/MRR 提升，不得写入简历/对外文档",
+      "generated_at": "2026-11-12T10:06:44+00:00",
+      "db": "MySQL legal_db.cases",
+      "case_count": 3,
+      "query_count": 6,
+      "label_rule": "title 查询→search；summary 首句→qa；正例=来源案例 id（构造式弱标签）"
+    },
+    "case_count": 3,
+    "query_count": 6,
+    "top_k": 5,
+    "caveats": [
+      "自动弱标注、非人工，仅作相对回归基线",
+      "固定小样本（cases=3、query=6），不得宣称 Recall@5/MRR 提升，不得写入简历/对外文档",
+      "query 由来源案例 title/summary 构造，与案例文本高度重合，召回指标偏乐观",
+      "top_k=5 大于案例数时 Recall@3/5 必然退化，不能当作效果证明",
+      "意图集只覆盖 qa/search（title→search、summary→qa），未覆盖 document；该一致率仅代表与构造规则一致，不代表线上表现",
+      "Reranker 为关键词命中计数，中文无空格时可能全 0；本次 hybrid_rerank 与 hybrid 的 6/6 条排序完全相同，不主张重排收益"
+    ]
+  },
+  "retrieval": {
+    "vector_only": {
+      "per_query": [
+        {
+          "query": "张三与李四离婚财产纠纷案",
+          "source": "title",
+          "relevant_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "retrieved_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "latency_ms": 24.624,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "夫妻双方因感情破裂协议离婚，对婚后共同购买的房产分割产生争议",
+          "source": "summary",
+          "relevant_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "retrieved_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "latency_ms": 13.034,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "李某交通事故赔偿案",
+          "source": "title",
+          "relevant_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "retrieved_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 11.04,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "交通事故受害人起诉肇事方及保险公司，要求赔偿医疗费、误工费、残疾赔偿金等",
+          "source": "summary",
+          "relevant_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "retrieved_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 8.979,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "王某劳动仲裁案",
+          "source": "title",
+          "relevant_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 6.988,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "劳动者因公司拖欠工资被迫离职，要求支付经济补偿金",
+          "source": "summary",
+          "relevant_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 11.085,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        }
+      ],
+      "aggregate": {
+        "hit@1": 1.0,
+        "hit@3": 1.0,
+        "hit@5": 1.0,
+        "mrr@5": 1.0
+      },
+      "latency_ms": {
+        "total_ms": 75.75,
+        "mean_ms": 12.625,
+        "max_ms": 24.624
+      }
+    },
+    "bm25_only": {
+      "per_query": [
+        {
+          "query": "张三与李四离婚财产纠纷案",
+          "source": "title",
+          "relevant_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "retrieved_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "latency_ms": 0.268,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "夫妻双方因感情破裂协议离婚，对婚后共同购买的房产分割产生争议",
+          "source": "summary",
+          "relevant_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 0.093,
+          "hit@1": 0.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 0.3333333333333333
+        },
+        {
+          "query": "李某交通事故赔偿案",
+          "source": "title",
+          "relevant_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "retrieved_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 0.073,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "交通事故受害人起诉肇事方及保险公司，要求赔偿医疗费、误工费、残疾赔偿金等",
+          "source": "summary",
+          "relevant_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 0.068,
+          "hit@1": 0.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 0.5
+        },
+        {
+          "query": "王某劳动仲裁案",
+          "source": "title",
+          "relevant_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 0.067,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "劳动者因公司拖欠工资被迫离职，要求支付经济补偿金",
+          "source": "summary",
+          "relevant_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 0.066,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        }
+      ],
+      "aggregate": {
+        "hit@1": 0.6667,
+        "hit@3": 1.0,
+        "hit@5": 1.0,
+        "mrr@5": 0.8056
+      },
+      "latency_ms": {
+        "total_ms": 0.635,
+        "mean_ms": 0.106,
+        "max_ms": 0.268
+      }
+    },
+    "hybrid": {
+      "per_query": [
+        {
+          "query": "张三与李四离婚财产纠纷案",
+          "source": "title",
+          "relevant_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "retrieved_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "latency_ms": 10.214,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "夫妻双方因感情破裂协议离婚，对婚后共同购买的房产分割产生争议",
+          "source": "summary",
+          "relevant_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "retrieved_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "latency_ms": 10.752,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "李某交通事故赔偿案",
+          "source": "title",
+          "relevant_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "retrieved_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 8.325,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "交通事故受害人起诉肇事方及保险公司，要求赔偿医疗费、误工费、残疾赔偿金等",
+          "source": "summary",
+          "relevant_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "retrieved_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 11.501,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "王某劳动仲裁案",
+          "source": "title",
+          "relevant_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 9.494,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "劳动者因公司拖欠工资被迫离职，要求支付经济补偿金",
+          "source": "summary",
+          "relevant_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 11.068,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        }
+      ],
+      "aggregate": {
+        "hit@1": 1.0,
+        "hit@3": 1.0,
+        "hit@5": 1.0,
+        "mrr@5": 1.0
+      },
+      "latency_ms": {
+        "total_ms": 61.354,
+        "mean_ms": 10.226,
+        "max_ms": 11.501
+      }
+    },
+    "hybrid_rerank": {
+      "per_query": [
+        {
+          "query": "张三与李四离婚财产纠纷案",
+          "source": "title",
+          "relevant_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "retrieved_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "latency_ms": 11.936,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "夫妻双方因感情破裂协议离婚，对婚后共同购买的房产分割产生争议",
+          "source": "summary",
+          "relevant_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "retrieved_ids": [
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "latency_ms": 10.366,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "李某交通事故赔偿案",
+          "source": "title",
+          "relevant_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "retrieved_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 8.893,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "交通事故受害人起诉肇事方及保险公司，要求赔偿医疗费、误工费、残疾赔偿金等",
+          "source": "summary",
+          "relevant_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac"
+          ],
+          "retrieved_ids": [
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 10.304,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "王某劳动仲裁案",
+          "source": "title",
+          "relevant_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 8.821,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        },
+        {
+          "query": "劳动者因公司拖欠工资被迫离职，要求支付经济补偿金",
+          "source": "summary",
+          "relevant_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309"
+          ],
+          "retrieved_ids": [
+            "bda24f40-2fdc-452d-925d-55d9c4f05309",
+            "1d32656c-5117-4c4e-b277-49d8e24ad3ac",
+            "09c0aff3-f311-4a81-bfcc-4d08365336ff"
+          ],
+          "latency_ms": 9.952,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "hit@5": 1.0,
+          "mrr@5": 1.0
+        }
+      ],
+      "aggregate": {
+        "hit@1": 1.0,
+        "hit@3": 1.0,
+        "hit@5": 1.0,
+        "mrr@5": 1.0
+      },
+      "latency_ms": {
+        "total_ms": 60.272,
+        "mean_ms": 10.045,
+        "max_ms": 11.936
+      }
+    }
+  },
+  "intent": {
+    "accuracy": 0.8333,
+    "fallback_rate": 0.0,
+    "latency_ms": {
+      "total_ms": 31011.336,
+      "mean_ms": 5168.556,
+      "max_ms": 7642.06
+    },
+    "tokens": {
+      "available": true,
+      "input_tokens": 1738,
+      "output_tokens": 1039,
+      "total_tokens": 2777
+    },
+    "per_query": [
+      {
+        "query": "张三与李四离婚财产纠纷案",
+        "expected_intent": "search",
+        "predicted_intent": "qa",
+        "correct": false,
+        "fallback_reason": null,
+        "latency_ms": 7642.06,
+        "usage": {
+          "input_tokens": 287,
+          "output_tokens": 245,
+          "total_tokens": 532
+        }
+      },
+      {
+        "query": "夫妻双方因感情破裂协议离婚，对婚后共同购买的房产分割产生争议",
+        "expected_intent": "qa",
+        "predicted_intent": "qa",
+        "correct": true,
+        "fallback_reason": null,
+        "latency_ms": 2274.28,
+        "usage": {
+          "input_tokens": 295,
+          "output_tokens": 92,
+          "total_tokens": 387
+        }
+      },
+      {
+        "query": "李某交通事故赔偿案",
+        "expected_intent": "search",
+        "predicted_intent": "search",
+        "correct": true,
+        "fallback_reason": null,
+        "latency_ms": 5759.004,
+        "usage": {
+          "input_tokens": 284,
+          "output_tokens": 140,
+          "total_tokens": 424
+        }
+      },
+      {
+        "query": "交通事故受害人起诉肇事方及保险公司，要求赔偿医疗费、误工费、残疾赔偿金等",
+        "expected_intent": "qa",
+        "predicted_intent": "qa",
+        "correct": true,
+        "fallback_reason": null,
+        "latency_ms": 5810.418,
+        "usage": {
+          "input_tokens": 297,
+          "output_tokens": 233,
+          "total_tokens": 530
+        }
+      },
+      {
+        "query": "王某劳动仲裁案",
+        "expected_intent": "search",
+        "predicted_intent": "search",
+        "correct": true,
+        "fallback_reason": null,
+        "latency_ms": 4508.343,
+        "usage": {
+          "input_tokens": 283,
+          "output_tokens": 158,
+          "total_tokens": 441
+        }
+      },
+      {
+        "query": "劳动者因公司拖欠工资被迫离职，要求支付经济补偿金",
+        "expected_intent": "qa",
+        "predicted_intent": "qa",
+        "correct": true,
+        "fallback_reason": null,
+        "latency_ms": 5017.231,
+        "usage": {
+          "input_tokens": 292,
+          "output_tokens": 171,
+          "total_tokens": 463
+        }
+      }
+    ]
+  }
+}

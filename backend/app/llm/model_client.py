@@ -13,7 +13,14 @@ def get_llm():
 
 #初始化大模型
 def _init_llm():
-  common = {"temperature": settings.LLM_TEMPERATURE, "max_tokens": settings.LLM_MAX_TOKENS}
+  # Phase 2 分层容错：超时/重试由配置驱动，默认值按实测分段耗时设定
+  common = {
+    "temperature": settings.LLM_TEMPERATURE,
+    "max_tokens": settings.LLM_MAX_TOKENS,
+    "request_timeout": settings.LLM_REQUEST_TIMEOUT,
+    "stream_chunk_timeout": settings.LLM_STREAM_CHUNK_TIMEOUT,
+    "max_retries": settings.LLM_MAX_RETRIES,
+   }
   if settings.LLM_PROVIDER == "openai":
     return ChatOpenAI(model=settings.LLM_MODEL, openai_api_key=settings.LLM_API_KEY,
              openai_api_base=settings.LLM_BASE_URL, **common)

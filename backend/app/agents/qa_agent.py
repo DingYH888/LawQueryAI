@@ -1,11 +1,14 @@
 """法律问答 Agent — 基于检索到的案例回答法律问题
 对话历史以 LangChain messages 形式由 workflow 的 checkpoint 提供，
 本 Agent 负责把 system 指令 + 案例上下文 + 历史消息组装后交给 LLM。"""
+import logging
 from typing import List, Dict, AsyncIterator
 from langchain_core.messages import BaseMessage, SystemMessage, AIMessageChunk
 
 from app.llm.model_client import get_llm
 from app.llm.prompts import QA_SYSTEM_PROMPT
+
+logger = logging.getLogger(__name__)
 
 
 class QAAgent:
@@ -31,9 +34,16 @@ class QAAgent:
     """流式回答，逐个产出 AIMessageChunk（token 在 chunk.content）。
 
      在 workflow 的 _qa_node 内调用，使 graph.astream(stream_mode='messages')
-     能转发 token 给流式消费者。"""
-    async for chunk in self.llm.astream(self.build_messages(cases, messages)):
-      yield chunk
+     能转发 token 给流式消费者。消费中断时显式 aclose 上游 LLM 流。"""
+    stream = self.llm.astream(self.build_messages(cases, messages))
+    try:
+      async for chunk in stream:
+        yield chunk
+    finally:
+      try:
+        await stream.aclose()
+      except Exception as exc: # 不让关闭上游流的异常覆盖原始 CancelledError
+        logger.warning("关闭 QA 上游流失败: %s", exc)
 
   def _format_cases(self, cases: List[Dict]) -> str:
     if not cases:

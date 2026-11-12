@@ -6,13 +6,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from tortoise import Tortoise
 
+from app.config import settings
+
 
 async def seed():
   await Tortoise.init(
-    db_url="mysql://root:123456@localhost:3307/legal_db",
-    modules={"models": ["models.case"]},
+    db_url=settings.DATABASE_URL,
+    modules={"models": ["app.models.case"]},
    )
-  from models.case import Case
+  from app.models.case import Case
 
   samples = [
      {

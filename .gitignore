@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# 本地面试准备资料，不纳入版本控制
+面试题_LegalMind.md
+LawQueryAI_面试项目分析.md
+面试题库_AI工程师_Agent_RAG.md

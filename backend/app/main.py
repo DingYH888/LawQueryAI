@@ -11,6 +11,7 @@ from app.config import settings
 from app.db.database import init_db, close_db
 from app.rag.vector_store import init_vector_store
 from app.llm.checkpoint import init_checkpointer, close_checkpointer
+from app.observability import TraceIdMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -44,6 +45,10 @@ app.add_middleware(
   allow_methods=["*"],
   allow_headers=["*"],
 )
+
+# trace_id 观测基座（Phase 0）：纯 ASGI 中间件，只追加 X-Trace-Id 响应头，
+# 不包装响应体，direct 链路与 SSE 帧保持不变。Starlette 1.7 中最后注册者位于最外层。
+app.add_middleware(TraceIdMiddleware)
 
 # 挂载静态资源目录，/docs 依赖的 swagger-ui 文件从本地读取
 # 先确保目录存在，避免 StaticFiles 因目录缺失启动报错

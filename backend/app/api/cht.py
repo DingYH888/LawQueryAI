@@ -1,5 +1,5 @@
 """聊天 API 路由 — 支持流式响应，会话按用户隔离
-对话记忆由 LangGraph 的 AsyncPostgresSaver（checkpoint）持久化，
+对话记忆由 LangGraph 的 AIOMySQLSaver（checkpoint）持久化，
 按 session_id（= thread_id）跨轮次/跨进程恢复；ChatMessageRecord 供侧边栏 UI。"""
 import uuid
 import json

@@ -79,7 +79,7 @@ async def generate_document_stream(request: DocumentGenerateRequest, user=Depend
 
 
 @router.get("/templates")
-async def get_templates():
+async def get_templates(user=Depends(get_current_user)):
   return {
     "templates": [
        {"type": "起诉状", "description": "民事起诉状"},

@@ -39,6 +39,26 @@ class Settings(BaseSettings):
   RAG_SCORE_THRESHOLD: float = 0.7
   RERANK_ENABLED: bool = True
 
+  # 可观测性（Phase 0 观测基座）：仅旁路观测，不改变 direct 执行链路
+  OBSERVABILITY_ENABLED: bool = True # 总开关；关闭后不写 X-Trace-Id、不输出 span JSON 日志
+  OBSERVABILITY_LOG_LEVEL: str = "INFO" # app.observability logger 级别
+
+  # Agent 工程化（Phase 1）：全部可由 .env 覆盖；默认 direct 走原有稳定链路
+  AGENT_TOOL_MODE: str = "direct" # direct(默认) | function_call
+  AGENT_INTENT_MODE: str = "structured" # structured | legacy
+  AGENT_FALLBACK_ENABLED: bool = True
+  AGENT_MAX_TOOL_CALLS: int = 1
+
+  # 分层容错（Phase 2）：默认值按标准 3307 实测分段耗时设定，不写死 30s
+  LLM_REQUEST_TIMEOUT: float = 120.0 # 非流式整请求；实测最长生成段 40839ms
+  LLM_STREAM_CHUNK_TIMEOUT: float = 120.0 # 流式 chunk 间隔；实测最大间隔 1738ms、首 token ~55436ms
+  LLM_MAX_RETRIES: int = 2 # 与原 OpenAI 客户端默认一致
+  LLM_INTENT_TIMEOUT: float = 60.0 # 实测意图 3893~15365ms
+  RETRIEVAL_TIMEOUT: float = 15.0 # 实测检索 12~52ms（含工具执行）
+  AGENT_EMPTY_RECALL_FALLBACK: bool = True
+  AGENT_MAX_CONCURRENCY: int = 4
+  AGENT_TOOL_FOLLOWUP_ENABLED: bool = False # followup 结果未被使用，默认关闭省一次调用
+
 
   class Config:
     env_file = ".env"

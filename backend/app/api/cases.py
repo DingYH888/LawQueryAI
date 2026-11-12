@@ -1,9 +1,10 @@
 """案例检索 API 路由"""
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 
 from app.agents.retrieval_agent import RetrievalAgent
+from app.dependencies import get_current_user
 from app.services.case_service import CaseService
 
 router = APIRouter()
@@ -28,6 +29,7 @@ async def search_cases_get(
   court: Optional[str] = Query(None, description="法院"),
   case_type: Optional[str] = Query(None, description="案件类型"),
   limit: int = Query(10, ge=1, le=100),
+  user=Depends(get_current_user),
 ):
   filters = {}
   if court:
@@ -41,7 +43,7 @@ async def search_cases_get(
 
 
 @router.get("/{case_id}", response_model=CaseDetail)
-async def get_case_detail(case_id: str):
+async def get_case_detail(case_id: str, user=Depends(get_current_user)):
   service = CaseService()
   case = await service.get_by_id(case_id)
   if not case:
